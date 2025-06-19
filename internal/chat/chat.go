@@ -1,7 +1,7 @@
 package chat
 
 import (
-	"fmt"
+	"log"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -55,7 +55,7 @@ func (c *Chat) matchmaking(user *User) {
 }
 
 func (c *Chat) RemoveSession(sessionID string) {
-	fmt.Println("УДАЛИТЬ SESSION", sessionID)
+	log.Println("УДАЛИТЬ SESSION", sessionID)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -66,7 +66,7 @@ func (c *Chat) RemoveSession(sessionID string) {
 }
 
 func (c *Chat) RemoveUser(id string) {
-	fmt.Println("УДАЛИТЬ ID", id)
+	log.Println("УДАЛИТЬ ID", id)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

@@ -1,7 +1,7 @@
 package chat
 
 import (
-	"fmt"
+	"log"
 	"sync"
 
 	"github.com/google/uuid"
@@ -34,7 +34,6 @@ func (u *User) ReadPump(c *Chat) {
 	defer func() {
 		c.RemoveUser(u.ID)
 		c.RemoveSession(u.SessionID)
-		u.Stop()
 	}()
 
 	for {
@@ -74,9 +73,9 @@ func (u *User) WritePump(c *Chat) {
 	}
 }
 
-func (u *User) Stop() {
+func (u *User) Disconnect() {
 	u.once.Do(func() {
-		fmt.Println("ОСТАНОВИТЬ", u.ID)
+		log.Println("ОСТАНОВИТЬ", u.ID)
 		close(u.closeChan)
 		u.Conn.Close()
 	})

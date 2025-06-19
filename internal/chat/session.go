@@ -1,7 +1,6 @@
 package chat
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -40,8 +39,6 @@ func (s *Session) Broadcast(sendderId string, msg []byte) {
 		Timestamp: time.Now(),
 	})
 
-	fmt.Println(s.Messages)
-
 	target := s.User1
 	if sendderId == target.ID {
 		target = s.User2
@@ -61,10 +58,12 @@ func (s *Session) Close() {
 
 	if s.User1 != nil {
 		s.User1.SendMsg("Чат завершен!")
+		s.User1.Disconnect()
 	}
 
 	if s.User2 != nil {
 		s.User2.SendMsg("Чат завершен!")
+		s.User2.Disconnect()
 	}
 
 	s.User1 = nil
