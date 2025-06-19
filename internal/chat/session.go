@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -38,6 +39,8 @@ func (s *Session) Broadcast(sendderId string, msg []byte) {
 		Content:   string(msg),
 		Timestamp: time.Now(),
 	})
+
+	fmt.Println(s.Messages)
 
 	target := s.User1
 	if sendderId == target.ID {

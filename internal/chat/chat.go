@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -30,7 +31,7 @@ func (c *Chat) HandleConnection(conn *websocket.Conn) {
 
 	go c.matchmaking(user)
 	go user.ReadPump(c)
-	go user.WritePump()
+	go user.WritePump(c)
 }
 
 func (c *Chat) matchmaking(user *User) {
@@ -48,19 +49,26 @@ func (c *Chat) matchmaking(user *User) {
 		user.SendMsg("Собеседник найден!")
 		partner.SendMsg("Собеседник найден!")
 	default:
-		c.waitQueue <- user
 		user.SendMsg("Ожидание собеседника...")
+		c.waitQueue <- user
 	}
 }
 
-func (c *Chat) RemoveID(id string) {
+func (c *Chat) RemoveSession(sessionID string) {
+	fmt.Println("УДАЛИТЬ SESSION", sessionID)
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if user, exists := c.users[id]; exists {
-		if session, ok := c.sessions[user.SessionID]; ok {
-			session.Close()
-			delete(c.sessions, user.SessionID)
-		}
-		delete(c.users, id)
+
+	if session, ok := c.sessions[sessionID]; ok {
+		session.Close()
+		delete(c.sessions, sessionID)
 	}
+}
+
+func (c *Chat) RemoveUser(id string) {
+	fmt.Println("УДАЛИТЬ ID", id)
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	delete(c.users, id)
 }

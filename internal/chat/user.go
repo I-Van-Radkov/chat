@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/google/uuid"
@@ -31,7 +32,8 @@ func generateUUID() string {
 
 func (u *User) ReadPump(c *Chat) {
 	defer func() {
-		c.RemoveID(u.ID)
+		c.RemoveUser(u.ID)
+		c.RemoveSession(u.SessionID)
 		u.Stop()
 	}()
 
@@ -45,15 +47,17 @@ func (u *User) ReadPump(c *Chat) {
 		session, exists := c.sessions[u.SessionID]
 		c.mu.Unlock()
 
+		if string(msg) == "!с" {
+			break
+		}
+
 		if exists {
 			session.Broadcast(u.ID, msg)
 		}
 	}
 }
 
-func (u *User) WritePump() {
-	defer u.Stop()
-
+func (u *User) WritePump(c *Chat) {
 	for {
 		select {
 		case msg, ok := <-u.Send:
@@ -72,6 +76,7 @@ func (u *User) WritePump() {
 
 func (u *User) Stop() {
 	u.once.Do(func() {
+		fmt.Println("ОСТАНОВИТЬ", u.ID)
 		close(u.closeChan)
 		u.Conn.Close()
 	})
