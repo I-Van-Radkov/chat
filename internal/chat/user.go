@@ -17,9 +17,9 @@ type User struct {
 	once      sync.Once
 }
 
-func NewUser(conn *websocket.Conn) *User {
+func NewUser(userId string, conn *websocket.Conn) *User {
 	return &User{
-		ID:        generateUUID(),
+		ID:        userId,
 		Conn:      conn,
 		Send:      make(chan []byte, 256),
 		closeChan: make(chan struct{}),

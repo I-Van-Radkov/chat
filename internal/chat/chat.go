@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"context"
 	"log"
 	"sync"
 
@@ -22,8 +23,20 @@ func NewChat() *Chat {
 	}
 }
 
-func (c *Chat) HandleConnection(conn *websocket.Conn) {
-	user := NewUser(conn)
+func (c *Chat) HandleConnection(ctx context.Context, conn *websocket.Conn) {
+	userId, ok := ctx.Value("userId").(string)
+	if !ok {
+		userId = generateUUID()
+	}
+
+	log.Println("Подключение пользователя ", userId)
+
+	if _, exist := c.users[userId]; exist {
+		log.Printf("Пользователь %v уже подключен\n", userId)
+		return
+	}
+
+	user := NewUser(userId, conn)
 
 	c.mu.Lock()
 	c.users[user.ID] = user
@@ -66,7 +79,7 @@ func (c *Chat) RemoveSession(sessionID string) {
 }
 
 func (c *Chat) RemoveUser(id string) {
-	log.Println("УДАЛИТЬ ID", id)
+	log.Println("УДАЛИТЬ USER", id)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

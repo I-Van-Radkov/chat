@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -23,13 +24,17 @@ func NewServer(chat *chat.Chat) *Server {
 }
 
 func (s *Server) Handler(w http.ResponseWriter, r *http.Request) {
+	userId := r.URL.Query().Get("user_id")
+
+	ctx := context.WithValue(context.Background(), "userId", userId)
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("WebSocket upgrade error: %v", err)
 		return
 	}
 
-	s.chat.HandleConnection(conn)
+	s.chat.HandleConnection(ctx, conn)
 }
 
 /*type Server struct {
