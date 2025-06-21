@@ -25,7 +25,7 @@ func NewChat() *Chat {
 
 func (c *Chat) HandleConnection(ctx context.Context, conn *websocket.Conn) {
 	userId, ok := ctx.Value("userId").(string)
-	if !ok {
+	if !ok || userId == "" {
 		userId = generateUUID()
 	}
 
