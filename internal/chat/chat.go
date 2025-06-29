@@ -24,11 +24,11 @@ func NewChat() *Chat {
 }
 
 func (c *Chat) HandleConnection(ctx context.Context, conn *websocket.Conn) {
-	userId, ok := ctx.Value("userId").(string)
+	/*userId, ok := ctx.Value("userId").(string)
 	if !ok || userId == "" {
 		userId = generateUUID()
-	}
-	userId = generateUUID()
+	}*/
+	userId := generateUUID()
 
 	log.Println("Подключение пользователя ", userId)
 
