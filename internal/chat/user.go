@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"fmt"
 	"log"
 	"sync"
 
@@ -16,6 +17,10 @@ type User struct {
 	closeChan chan struct{}
 	once      sync.Once
 }
+
+const (
+	msgChatOver = "Чат завершен!"
+)
 
 func NewUser(userId string, conn *websocket.Conn) *User {
 	return &User{
@@ -42,6 +47,8 @@ func (u *User) ReadPump(c *Chat) {
 			break
 		}
 
+		fmt.Println("ПОЛУЧЕНО СООБЩЕНИЕ", string(msg))
+
 		c.mu.Lock()
 		session, exists := c.sessions[u.SessionID]
 		c.mu.Unlock()
@@ -64,10 +71,15 @@ func (u *User) WritePump(c *Chat) {
 				return
 			}
 
+			fmt.Println("ОТПРАВИТЬ СООБЩЕНИЕ", string(msg))
 			if err := u.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 				return
 			}
 		case <-u.closeChan:
+			fmt.Println("ОТПРАВИТЬ СООБЩЕНИЕ", msgChatOver)
+			u.Conn.WriteMessage(websocket.TextMessage, []byte(msgChatOver))
+
+			u.Conn.Close()
 			return
 		}
 	}
@@ -77,7 +89,6 @@ func (u *User) Disconnect() {
 	u.once.Do(func() {
 		log.Println("ОСТАНОВИТЬ", u.ID)
 		close(u.closeChan)
-		u.Conn.Close()
 	})
 }
 

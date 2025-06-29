@@ -28,6 +28,7 @@ func (c *Chat) HandleConnection(ctx context.Context, conn *websocket.Conn) {
 	if !ok || userId == "" {
 		userId = generateUUID()
 	}
+	userId = generateUUID()
 
 	log.Println("Подключение пользователя ", userId)
 

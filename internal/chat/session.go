@@ -12,6 +12,7 @@ type Session struct {
 	Messages  []Message
 	CreatedAt time.Time
 	mu        sync.Mutex
+	once      sync.Once
 }
 
 type Message struct {
@@ -53,19 +54,19 @@ func (s *Session) Broadcast(sendderId string, msg []byte) {
 }
 
 func (s *Session) Close() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.once.Do(func() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
 
-	if s.User1 != nil {
-		s.User1.SendMsg("Чат завершен!")
-		s.User1.Disconnect()
-	}
+		if s.User1 != nil {
+			s.User1.Disconnect()
+		}
 
-	if s.User2 != nil {
-		s.User2.SendMsg("Чат завершен!")
-		s.User2.Disconnect()
-	}
+		if s.User2 != nil {
+			s.User2.Disconnect()
+		}
 
-	s.User1 = nil
-	s.User2 = nil
+		s.User1 = nil
+		s.User2 = nil
+	})
 }
