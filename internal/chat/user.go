@@ -19,7 +19,8 @@ type User struct {
 }
 
 const (
-	msgChatOver = "Чат завершен!"
+	msgChatOver   = "Чат завершен!"
+	msgSendingErr = "Ошибка отправки сообщения"
 )
 
 func NewUser(userId string, conn *websocket.Conn) *User {
@@ -44,7 +45,8 @@ func (u *User) ReadPump(c *Chat) {
 	for {
 		_, msg, err := u.Conn.ReadMessage()
 		if err != nil {
-			break
+			u.SendMsg(msgSendingErr)
+			continue
 		}
 
 		fmt.Println("ПОЛУЧЕНО СООБЩЕНИЕ", string(msg))
