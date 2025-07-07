@@ -8,13 +8,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true },
-}
-
 type Server struct {
-	router *gin.Engine
-	chat   *chat.Chat
+	router   *gin.Engine
+	chat     *chat.Chat
+	upgrader websocket.Upgrader
 }
 
 func NewServer(chat *chat.Chat) *Server {
@@ -22,9 +19,14 @@ func NewServer(chat *chat.Chat) *Server {
 
 	router.Use(corsMiddleware())
 
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool { return true },
+	}
+
 	server := &Server{
-		router: router,
-		chat:   chat,
+		router:   router,
+		chat:     chat,
+		upgrader: upgrader,
 	}
 
 	server.setupRoutes()
