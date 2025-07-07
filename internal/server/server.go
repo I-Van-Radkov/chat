@@ -1,11 +1,10 @@
 package server
 
 import (
-	"context"
-	"log"
 	"net/http"
 
-	"github.com/I-Van-Radkov/chat.git/internal/chat"
+	"github.com/I-Van-Radkov/chat/internal/chat"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
@@ -14,42 +13,14 @@ var upgrader = websocket.Upgrader{
 }
 
 type Server struct {
-	chat *chat.Chat
-}
-
-func NewServer(chat *chat.Chat) *Server {
-	return &Server{
-		chat: chat,
-	}
-}
-
-func (s *Server) Handler(w http.ResponseWriter, r *http.Request) {
-	userId := r.URL.Query().Get("user_id")
-
-	ctx := context.WithValue(context.Background(), "userId", userId)
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("WebSocket upgrade error: %v", err)
-		return
-	}
-
-	s.chat.HandleConnection(ctx, conn)
-}
-
-/*type Server struct {
-	router     *gin.Engine
-	chat       *chat.Chat
-	httpServer *http.Server
+	router *gin.Engine
+	chat   *chat.Chat
 }
 
 func NewServer(chat *chat.Chat) *Server {
 	router := gin.Default()
 
-	router.Use(
-		gin.Recovery(),
-		corsMiddleware(),
-	)
+	router.Use(corsMiddleware())
 
 	server := &Server{
 		router: router,
@@ -61,20 +32,19 @@ func NewServer(chat *chat.Chat) *Server {
 }
 
 func (s *Server) setupRoutes() {
-
+	s.router.GET("/ws", s.handlerChat)
 }
 
-func (s *Server) handleWebSocket(c *gin.Context) {
-}
-
-func (s *Server) Start() error {
+func (s *Server) Start(addr string) error {
+	return s.router.Run(addr)
 }
 
 func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 		c.Next()
 	}
 }
-*/

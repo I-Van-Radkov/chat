@@ -2,10 +2,9 @@ package main
 
 import (
 	"log"
-	"net/http"
 
-	"github.com/I-Van-Radkov/chat.git/internal/chat"
-	"github.com/I-Van-Radkov/chat.git/internal/server"
+	"github.com/I-Van-Radkov/chat/internal/chat"
+	"github.com/I-Van-Radkov/chat/internal/server"
 )
 
 const (
@@ -17,10 +16,7 @@ func main() {
 
 	srv := server.NewServer(chatService)
 
-	http.HandleFunc("/ws", srv.Handler)
-
-	log.Printf("Сервер запущен на %s", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
+	if err := srv.Start(addr); err != nil {
 		log.Fatal("Ошибка запуска сервера")
 	}
 }

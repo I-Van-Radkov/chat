@@ -1,7 +1,6 @@
 package chat
 
 import (
-	"context"
 	"log"
 	"sync"
 
@@ -23,7 +22,7 @@ func NewChat() *Chat {
 	}
 }
 
-func (c *Chat) HandleConnection(ctx context.Context, conn *websocket.Conn) {
+func (c *Chat) HandleConnection(conn *websocket.Conn) {
 	/*userId, ok := ctx.Value("userId").(string)
 	if !ok || userId == "" {
 		userId = generateUUID()
