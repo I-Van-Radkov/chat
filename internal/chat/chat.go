@@ -3,6 +3,7 @@ package chat
 import (
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -23,6 +24,12 @@ func NewChat() *Chat {
 }
 
 func (c *Chat) HandleConnection(conn *websocket.Conn) {
+	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	conn.SetPongHandler(func(appData string) error {
+		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return nil
+	})
+
 	/*userId, ok := ctx.Value("userId").(string)
 	if !ok || userId == "" {
 		userId = generateUUID()
@@ -45,6 +52,8 @@ func (c *Chat) HandleConnection(conn *websocket.Conn) {
 	go c.matchmaking(user)
 	go user.ReadPump(c)
 	go user.WritePump(c)
+
+	go c.PingUser(user)
 }
 
 func (c *Chat) matchmaking(user *User) {
@@ -73,6 +82,9 @@ func (c *Chat) RemoveSession(sessionID string) {
 	defer c.mu.Unlock()
 
 	if session, ok := c.sessions[sessionID]; ok {
+		c.RemoveUser(session.User1.ID)
+		c.RemoveUser(session.User2.ID)
+
 		session.Close()
 		delete(c.sessions, sessionID)
 	}
@@ -80,8 +92,27 @@ func (c *Chat) RemoveSession(sessionID string) {
 
 func (c *Chat) RemoveUser(id string) {
 	log.Println("УДАЛИТЬ USER", id)
-	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	delete(c.users, id)
+}
+
+func (c *Chat) PingUser(user *User) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer func() {
+		ticker.Stop()
+		c.RemoveSession(user.SessionID)
+	}()
+
+	for {
+		select {
+		case <-ticker.C:
+			err := user.Conn.WriteControl(websocket.PingMessage, []byte(time.Now().String()), time.Now().Add(10*time.Second))
+			if err != nil {
+				log.Println("Ping error:", err)
+				return
+			}
+		case <-user.closeChan:
+			return
+		}
+	}
 }

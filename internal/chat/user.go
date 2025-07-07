@@ -38,7 +38,6 @@ func generateUUID() string {
 
 func (u *User) ReadPump(c *Chat) {
 	defer func() {
-		c.RemoveUser(u.ID)
 		c.RemoveSession(u.SessionID)
 	}()
 
